@@ -1,0 +1,551 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css">
+		<link rel="stylesheet" href="plugin/chalkboard/style.css">
+		<link rel="stylesheet" href="plugin/customcontrols/style.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js-plugins/menu/font-awesome/css/fontawesome.css">
+
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+		
+		<style type="text/css">
+			h1 {text-align: left; color: #42affa;}
+			h2 {text-align: left; color: #42affa;}
+			h3 {text-align: left; color: #42affa;}
+			h4 {text-align: left; color: #42affa;}
+			p { text-align: left; }
+		</style>
+		<style>
+			.reveal section li {
+			display: inline-block;
+			font-size: 0.9em;
+			line-height: 1.2em;
+			vertical-align: top;
+		  }
+		</style>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-transition="zoom">
+					<h2>Bayesian Inference for Intractable Models</h2>
+					<hr>
+					<h4 style="color:#8dcffc">Opportunities and Pitfalls in the Era of Machine Learning</h4>
+					<p>Sebastian Schmon, DPhil</p>
+				</section>
+
+				<section data-transition="zoom-in fade-out">
+
+					<section>
+						<h3>Prelude</h3>
+						<hr>
+						<h4>The Problem with Simulation Models and Inference</h4>
+					</section>
+
+					<section data-transition="zoom-in fade-out">
+						<video data-autoplay src="ramp.mp4">
+					</section>
+
+					<section>
+						<p>In Bayesian statistics one encodes prior beliefs in a probability distribution $p(\theta)$.</p>
+						<p class="fragment">Observing some data $y$, Bayes' formula then provides a coherent means of updating the beliefs:</p>
+						<p class="fragment" style="color:#8dcffc">
+							$$
+								p(\theta \mid y) = \frac{p(y \mid \theta)p(\theta)}{p(y)},
+							$$
+						</p>
+						<p class="fragment">where $p(y) = \int_\Theta p(y \mid \theta)p(\theta)\mathrm{d}\theta$.</p>
+
+					</section>
+					<section data-auto-animate data-auto-animate-id="two">
+						<p> However, simulators are bottom-up, i.e. instead of defining the outcome distribution, they define low-level logic.</p>
+						<p> <video data-autoplay src="ramp.mp4" height=500> </video></p>
+						
+					</section>
+					<section data-auto-animate data-auto-animate-id="two">
+						<p> However, simulators are bottom-up, i.e. instead of defining the outcome distribution, they define low-level logic.</p>
+						<p> Hence, the quantity <a style="color:#8dcffc">$p(y \mid \theta)$</a> (likelihood) is usually not available analytically, because most commonly data $y$ is aggregate and hence
+							$$p(y \mid \theta) = \int p(y, z \mid \theta)\mathrm{d}z.$$
+					</section>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="three">
+					<h3>Chapter 1</h3>
+					<hr>
+					<h4 data-id="box">Neural networks can do everything<a class="fragment">?</a></h4>
+				</section>
+
+				<section data-transition="fade-out" data-auto-animate data-auto-animate-id="three">
+					<h4 data-id="box">Neural networks can do everything<a>?</a></h4>
+					<hr>
+					<p>Let's use modern neural network approaches to estimate</p>
+					<p class="fragment" data-id="box2">
+						$$
+						p(\theta \mid y) = \frac{p(y \mid \theta)}{p(y)}p(\theta).
+						$$
+					</p>
+					<p class="fragment" style="color:#8dcffc">
+						How?
+					</p>
+				</section>
+
+				<section data-auto-animate>
+					<section>
+						<h4>Neural Posterior Estimation</h4>
+						<hr>
+						<p>Sample $(y_i, \theta_i) \sim p(y \mid \theta)p(\theta), i = 1, \ldots, n$</p>
+						<p>Use (conditional) normalizing flows to approximate the posterior:</p>
+						<p data-id="box2">
+							$$
+							{\color{Cyan}{p(\theta \mid y)}} = \frac{p(y \mid \theta)}{p(y)}p(\theta).
+							$$
+						</p>
+					</section>
+
+					<section>
+						<h4>Normalizing Flows</h4>
+						<hr>
+							<p> Density transformation formula
+								$$
+									f_x(x) = f_u(T^{-1}(x)) |\det J_{T^{-1}}(x)| 
+								$$
+							<p> Choosing a base distribution \(f_u\), we can parameterize the transformation as \(T_\phi\) and thus learn a new density
+								$$
+									\log f_x(x) = \log f_u(T_\phi^{-1}(x)) + \log |\det J_{T_\phi^{-1}}(x)|.
+								$$
+							<aside class="notes"> This can be evaluated easily if the transformation is choosen well and optimized using automatic differentiation.
+							Examples: ResFlows, Masked Autoregressive Flows, Neural Spline Flows, Householder Flows, etc... </aside>
+					</section>
+
+					<section>
+						<p>Learn $p_{\phi = h_\psi(y)}(\theta \mid y) = f_u(T_{\phi = h_\psi(y)}^{-1}(\theta))|\det J_{T_{\phi = h_\psi(y)}^{-1}}(\theta)|$ by minimizing</p>
+						<p> $$
+							\ell(y_{1, \ldots, n}, \theta_{1, \ldots, n}) = \sum_{i=1}^n p_{\phi = h_\psi(y_i)}(\theta_i \mid y_i)
+							$$
+							w.r.t. to $\psi$.
+						</p>
+					</section>
+				</section>
+
+				<section data-auto-animate data-auto-animate-id="five">
+					<section>
+						<h4>Neural Likelihood Estimation</h4>
+						<hr>
+						<p>Sample $(y_i, \theta_i) \sim p(y \mid \theta)p(\theta), i = 1, \ldots, n$</p>
+						<p>Use (conditional) normalizing flows to approximate the posterior:</p>
+						<p data-id="box3">
+							$$
+							p(\theta \mid y) = \frac{{\color{Cyan}{p(y \mid \theta)}}}{p(y)}p(\theta).
+							$$
+						</p>
+					</section>
+
+					<section>
+						<p>Learn $p_{\phi = h_\psi(\theta)}(y \mid \theta) = f_u(T_{\phi = h_\psi(\theta)}^{-1}(y))|\det J_{T_{\phi = h_\psi(\theta)}^{-1}}(y)|$ by minimizing</p>
+						<p> $$
+							\ell(y_{1, \ldots, n}, \theta_{1, \ldots, n}) = \sum_{i=1}^n p_{\phi = h_\psi(\theta_i)}(y_i \mid \theta_i)
+							$$
+							w.r.t. to $\psi$.
+						</p>
+					</section>
+				</section>
+
+				<section>
+					<section data-auto-animate data-auto-animate-id="six">
+						<h4>Neural Ratio Estimation</h4>
+						<hr>
+						<p>Sample $(y_i, \theta_i) \sim p(y \mid \theta)p(\theta), i = 1, \ldots, n$</p>
+						<p>Use a classifier to learn:</p>
+						<p> </p>
+						<p>
+							$$
+							p(\theta \mid y) = {\color{Cyan}{\frac{p(y \mid \theta)}{p(y)}}}p(\theta).
+							$$
+						</p>
+					</section>
+
+					<section>
+						<h4>Density estimation via classification</h4>
+						<hr>
+						<p>Assume we have density samples from a density $f$ and we can sample from a density $g$, if we label samples $x \sim f$ with $c=1$ and $x \sim g$ with $c=0$ then the optimal classifier is</p>
+						\[\begin{aligned}
+						d(x) &amp; = \mathbb{P}(c = 1 \mid x) \\	
+							 &amp; = \frac{p(x \mid c = 1)}{p(x \mid c = 1) + p(x \mid c = 0)}  \\
+							 &amp; = \frac{f(x)}{f(x) + g(x)}.
+						\end{aligned} \]
+					</section>
+
+					<section>
+						<h4>Density estimation via classification</h4>
+						<hr>
+						<p>Hence,</p>
+						\[\begin{aligned}
+						\frac{d(x)}{1 - d(x)} &amp; = \frac{f(x)}{g(x)}.
+						\end{aligned} \]
+					</section>
+
+					<section>
+						<h4>Density estimation via classification</h4>
+						<hr>
+						<p>For Bayesian inference we can sample $(\theta_i, y_i) \sim p(y \mid\theta)p(\theta)$ and a contrasting dataset $(\theta_i, y_i) \sim p(\theta)p(y)$:</p>
+						\[\begin{aligned}
+						\frac{d(y, \theta)}{1 - d(y, \theta)} = \frac{p(\theta, y)}{p(\theta)p(y)} = \frac{p(y \mid \theta)}{p(y)}.
+						\end{aligned} \]
+					</section>
+				</section>
+
+				<section>
+					<section>
+						<h4>Model Misspecification</h4>
+						<hr>
+						<p>So with these novel techniques it's just all a question of using neural networks?</p>
+						<p>We tried these with some real data and ... oh well...</p>
+						<p>So we did some benchmarking for observed data $y_o$ in the tails.</p>
+					</section>
+
+					<section>
+						<img src="coverage.png" alt="reveal.js logo" style="height: 700px; margin: 0 auto 4rem auto; background: transparent;" class="demo-logo">
+					</section>
+
+					<section>
+						<img src="one.jpeg" alt="reveal.js logo" style="height: 600px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Toy Gaussian Example</p>
+					</section>
+
+					<section>
+						<img src="two.jpeg" alt="reveal.js logo" style="height: 600px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Simple likelihood complex posterior</p>
+					</section>
+
+					<section>
+						<img src="three.jpeg" alt="reveal.js logo" style="height: 600px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Stochastic volatility</p>
+					</section>
+				</section>
+
+				<section >
+					<section data-transition="zoom-in fade-out">
+						<h3>An attempt to fix it with model criticism</h3>
+						<hr>
+						<p> Perhaps should not conflate samples from the simulator with real data.</p>
+						<p> Let's distinguish $x$ for samples from the simulator and $y$ for real data.</p>
+						<p> If $y$ has low probability, the dataset will have little support and the relative error could be huge.</p>
+					</section>
+
+					<section>
+						<p> Now that we have separated $x$ and $y$ we can model the difference $p(y \mid x, \theta)$:</p>
+						$$
+							p(y \mid \theta) = \int p(y\mid x, \theta)p(x \mid \theta)\mathrm{d} x
+						$$
+					</section>
+
+					<section data-auto-animate data-auto-animate-id="seven">
+						<img src="rnpe_diagram1.png" alt="reveal.js logo" style="height: 400px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p data-id="box4"> Error model idea</p>
+					</section>
+
+					<section data-auto-animate data-auto-animate-id="seven">
+						<p data-id="box4">Error model idea</p>
+						\[\begin{aligned}
+							z_j 	&amp; \sim \mathrm{Ber}(\alpha), j = 1, \ldots, D \\
+							s(y_j) \mid s(x_j), z_j = 0 &amp; \sim \mathcal{N}(s(x_j), \sigma^2), \\
+							s(y_j) \mid s(x_j), z_j = 1 &amp; \sim \mathrm{Cauchy}(s(x_j), \tau).
+						\end{aligned}\]
+					</section>
+
+					<section>
+						<img src="spikeslab.png" alt="reveal.js logo" style="height: 400px; margin: -20 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Why it works</p>
+					</section>
+
+					<section>
+						<p> Now that we have separated $x$ and $y$ we can model the difference $p(y \mid x, \theta)$:</p>
+						\[\begin{aligned}
+							p(y \mid x)  = \prod_{j=1}^D \big[(1 - &amp; \alpha) \cdot p(s_j(y) | s_j(x), z_j = 0) \\
+							&amp; + \alpha \cdot p(s_j(y) | s_j(x), z_j = 1)  \big]
+						\end{aligned}\]
+					</section>
+
+					<section>
+						<img src="rnpre3.png" alt="reveal.js logo" style="height: 400px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Misspecified Stochastic SIR Model</p>
+					</section>
+
+					<section>
+						<img src="rnpe1.png" alt="reveal.js logo" style="height: 600px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>SIR Results</p>
+					</section>
+
+					<section>
+						<img src="rnpe2.png" alt="reveal.js logo" style="height: 400px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Overall Results</p>
+					</section>
+				</section>
+				
+			
+				<!-- <section data-transition="zoom-in fade-out">
+					<h3>Chapter 2</h3>
+					<hr>
+					<h4>Maybe it's the Likelihood's fault<a class="fragment">?</a></h4>
+				</section>
+
+				<section>
+					<section>
+						<h3>Generalized Bayes</h3>
+						<hr>
+						<p> Bayesian statistics has a strong requirement: we need to know the complete data distribution!</p>
+						<p> Recently, there has been increasing interest in generalized approaches:
+							$$
+								\pi(\theta \mid y) = \frac{e^{-\ell(y, \theta)}p(\theta)}{\int_\Theta e^{-\ell(y, \theta)}p(\theta) \mathrm{d}\theta.}
+							$$
+						</p>
+					</section>
+
+					<section>
+						<h3>Generalized Bayes</h3>
+						<hr>
+						Motivation via optimization
+						$$
+						q_B = \text{argmin}_{q\in \mathcal{P}(\Theta)}\left\{ \mathbb{E}_q\left[\sum_{i=1}^n \ell(y_i, \theta) \right] + KL(q, \pi) \right\}
+						$$
+					</section>
+				</section>
+
+				<section>
+					<section>
+					<h3>Generalized Bayes</h3>
+					<hr>
+					<p> Unfortunately, very often even that is going to be limiting: how do we score $y$ against simulator parameters?</p>
+					<p> We suggest the generalized posterior:
+						$$
+							\pi(\theta \mid y) = \frac{\int_X e^{-\ell(y, x)}p(x \mid \theta)p(\theta)\mathrm{d}x}{\int_\Theta \int_X e^{-\ell(y, x)}p(x \mid \theta)p(\theta)\mathrm{d}x\mathrm{d}\theta.}
+						$$
+					</p>
+					</section>
+
+					<section>
+						<h3>Generalized Bayes</h3>
+						<hr>
+						<p>Motivation via optimization</p>
+						$$\tiny
+						q_B = \text{argmin}_{q\in \mathcal{P}(\Theta)}\left\{ \mathbb{E}_q\left[\mathbb{E}_{p(x \mid \theta)}\left[\sum_{i=1}^n \ell(y_i, x_i)\right] \right] + KL\left( p(x | \theta)q(\theta), p(x | \theta)\pi(\theta)\right) \right\}.
+						$$
+					</section>
+
+					<section>
+					<h3>Generalized Bayes</h3>
+					<hr>
+					<p> Allows for a wide set of new losses, $\ell(y, x)$ <a class="frament">(Inductive biases?)</a></p>
+					<p class="fragment"> Integral Probability Metrics</p>
+					<p class="fragment"> Topological Losses (Persistent Homology)</p>
+					<p class="fragment"> Path Signature Kernels</p>
+					</section>
+				</section>
+
+				<section>
+					<section data-transition="zoom-in">
+						<h3>Topological Losses</h3>
+						<h4>(Persistent Homology)</h4>
+						<hr>
+						<img src="Cube.svg" alt="Square" style="height: 200px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<img src="Sphere.svg" alt="Cube" style="height: 200px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<img src="Torus.svg" alt="Torus" style="height: 200px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Persistent homology is based on the idea of describing geometrical and
+							topological properties of data by means of combinatorial data
+							structures.</p>
+					</section>
+
+					<section>
+						<p>Persistent homology was developed as a ‘shape descriptor’ for real-world data sets, where
+							the idealised notions of algebraic topology do not necessarily apply any more.</p>
+					</section>
+					<section>
+						<img src="topo0.png" alt="reveal.js logo" style="height: 200px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Persistent Homology: Idea</p>
+					</section>
+					<section>
+						<img src="topo1.png" alt="reveal.js logo" style="height: 400px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>A persistence diagram of the 1-dimensional topological features (cycles)</p>
+					</section>
+					<section>
+						<img src="topo2.png" alt="reveal.js logo" style="height: 200px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<p>Persistence images.
+						</p>
+					</section>
+
+					<section>
+						<h3>Topological Losses</h3>
+						<h4>(Persistent Homology)</h4>
+						<hr>
+						<p>Distance between persistence images</p>
+						<p>Kernels between persistence diagrams</p>
+					</section>
+
+					<section>
+						<h3>Percolation Model</h3>
+						<hr>
+						<img src="importance_cubical_50_six.png" alt="reveal.js logo" style="height: 300px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+						<img src="importance_scc_50_six.png" alt="reveal.js logo" style="height: 300px; margin: 0 auto 0rem auto; background: transparent;" class="demo-logo">
+					</section>
+				</section>
+
+				<section >
+					<section data-transition="zoom-in">
+						<h3>Path Signatures for temporal models</h3>
+						<hr>
+						<p>Path $X = (X^1, X^2, \dots, X^d) : \left[0, T\right] \to \mathbb{R}^d$; </p>
+						\begin{equation}
+						\text{Sig}(X) = \left(S(X)^1_{0,T}, \dots, S(X)^d_{0,T}, S(X)^{1,1}_{0,T}, S(X)^{1,2}_{0,T}, \dots\right),
+						\end{equation}
+						\begin{align}
+							S(X)^{j}_{0,T} &amp;= \int_{0 \leq t \leq T} \mathrm{d}X^{j}_{t},\\
+							S(X)^{i_1,\dots,i_k}_{0,T} &amp;= \int_{0 \leq t \leq T} S(X)_{0,t}^{i_1,\dots,i_{k-1}} \mathrm{d}X^{i_k}_{t}.
+						\end{align}
+					</section>
+
+					<section>
+						<p>Let $X_t$ takes values in $\mathbb{R}^2$, $X(t) = (X_1(t), X_2(t))$ then</p>
+						\begin{align*}
+							\mathrm{Sig}(\mathbf{X}) &amp; = \Bigg( 
+							1, 
+							\begin{bmatrix}
+								\int_0^T dX_1(t) \\
+								\int_0^T dX_2(t) 
+							\end{bmatrix},  \\
+							&amp; \begin{bmatrix}
+								\int_0^T \int_0^{t_2} dX_1(t_1)dX_1(t_2) & \int_0^T \int_0^{t_2} dX_1(t_1)dX_2(t_2) \\
+								\int_0^T \int_0^{t_2} dX_2(t_1)dX_1(t_2) & \int_0^T \int_0^{t_2} dX_2(t_1)dX_2(t_2)
+							\end{bmatrix} \ldots
+							\Bigg)
+						\end{align*}
+					</section>
+
+					<section>
+						<p>Let $X: [0, T] \rightarrow \mathbb{R}^d$ be a linear interpolation between $X_0 = z$ and $X_T = y$</p>
+						\begin{align*}
+							\mathrm{Sig}(\mathbf{x}) &amp; = \left(1, y - z, \frac{1}{2}(y - z)^{\otimes 2},\ldots, \frac{1}{k!}(y - z)^{\otimes k},\ldots  \right).
+						\end{align*}
+					</section>
+
+					<section>
+						<p>Properties of Signatures</p>
+						<ul>
+							<li>Signatures determine (smooth) paths up to translations and reparametrizations</li>
+							<li>If the signature is computed on the path $(t, X_t)$, with $t$ denoting time, the signature determines the path up to translation.</li>
+							<li>Universal nonlinearity: for any $f \in C(K, \mathbb{R})$, compact $K\subset C^1([0, T], \mathbb{R}^d)$, $\varepsilon > 0$, there exists $L \in \bigoplus_{m\geq 0}(\mathbb{R}^d)^{\otimes m}$ such that
+								\begin{equation*}
+									\sup_{f\in K} |f(X) - \langle L, \mathrm{Sig}(X)\rangle | < \varepsilon. 
+								\end{equation*}</li>
+						</ul>
+					</section>
+
+					<section>
+						<h3>Signature ABC</h3>
+						<hr>
+						<p>Use loss</p>
+						\begin{align}
+						\ell(y, x) &amp; := \| Sig\left(y\right) - Sig\left(x\right) \|^2 \\
+						&amp; = k(y, y) - 2k(y, x) + k(x, x),
+						\end{align}
+						<p>where</p>
+						\begin{equation*}
+							k(x, y) = \langle Sig\left(x\right), Sig\left(y\right) \rangle.
+						\end{equation*}
+						<aside class="notes">
+							<p>Two approaches:</p>
+							<ul>
+								<li>Truncated signatures. Compute signature up to some finite order, usually between 2 and 5.</li>
+								<li>Compute $k(x, y)$ directly solving a PDE \autocite{salvi2020computing}. (No truncation needed.)</li>
+							</ul>
+						</aside>
+
+					</section>
+
+					<section>
+						<p>Dynamic random graph: edges appear with probability $\phi$ and dissappear with probability $\tau$. We run Signature ABC:</p>
+						<img src="sd_nobp_post_probablyBest.png" alt="reveal.js logo" style="height: 400px; margin: 0 auto 0rem auto; background: white;" class="demo-logo">	
+					</section>
+				</section> -->
+
+				<!-- <section>
+					<h2>The Lorenz Equations</h2>
+					\[\begin{aligned}
+					\dot{x} &amp; = \sigma(y-x) \\
+					\dot{y} &amp; = \rho x - y - xz \\
+					\dot{z} &amp; = -\beta z + xy
+					\end{aligned} \]
+				</section>
+
+				<section>
+					<p>we have $a = 2$</p>
+					<aside class="notes">
+					<p>Some notes</p>
+					</aside>
+					<p>Some slide text</p>
+					<aside class="notes">
+					<p>and some more notes</p>
+					</aside>
+				</section> -->
+
+				  <!-- <section>
+
+					<iframe data-src="https://schmons.github.io" width="1200" height="800" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:3px solid #666; margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe>
+				
+				</section>	 -->
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+		<script src="plugin/math/math.js"></script>
+		<script>
+			Reveal.initialize({
+				mathjax3: {
+					mathjax: 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js',
+					tex: {
+					inlineMath: [ [ '$', '$' ], [ '\\(', '\\)' ]  ]
+					},
+					options: {
+					skipHtmlTags: [ 'script', 'noscript', 'style', 'textarea', 'pre' ]
+					},
+				},
+				plugins: [ RevealMath.MathJax3 ]
+				});
+			Reveal.initialize({ slideNumber: 'c/t' });
+
+			// Reveal.initialize({ plugins: [ RevealMath.KaTeX ] });
+		</script>
+		<script src="plugin/chalkboard/plugin.js"></script>
+		<script src="plugin/customcontrols/plugin.js"></script>
+		
+		<script>
+			Reveal.initialize({
+				// ...
+				plugins: [ RevealChalkboard, RevealCustomControls ],
+				// ...
+			});
+		</script>
+	</body>
+</html>
