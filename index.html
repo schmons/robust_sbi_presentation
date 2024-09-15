@@ -32,10 +32,55 @@
 			vertical-align: top;
 		  }
 		</style>
+
+		<style>
+			.highlight-current-custom.fragment {
+				color: #8dcffc;
+				font-weight: bold;
+			}
+		</style>
+
+		<style>
+			.highlight-current-normal.fragment.current-fragment {
+				color: lightgrey;
+				/* font-weight: bold; */
+			}
+		</style>
 	</head>
 	<body>
 		<div class="reveal">
 			<div class="slides">
+
+				<!-- First Slide -->
+				<section data-transition="zoom">
+					<h2>About Me</h2>
+					<hr>
+					<div style="display: flex; align-items: center;">
+						<div style="flex: 1;">
+							<img src="seb-480.webp" alt="Sebastian S" style="width: 100%; max-width: 200px;">
+						</div>
+						<div style="flex: 2; padding-left: 20px;">
+							<p>
+								I am a researcher in machine learning, particularly interested in interpretability and using machine learning to <em>understand</em> and to <em>learn</em>, i.e. to <em>do science</em>.
+							</p>
+						</div>
+					</div>
+				</section>
+
+				<!-- Second Slide -->
+
+				<section data-transition="zoom">
+					<h2>Research Interests</h2>
+					<hr>
+					<p class="fragment highlight-current-red">Disentanglement</p>
+					<p class="fragment highlight-current-red">Multi-modality</p>
+					<p class="fragment highlight-current-red">Monte Carlo Methods</p>
+					<p class="fragment highlight-current-custom">Uncertainty Quantification</p>
+					<p class="fragment highlight-current-custom">Simulation-based Inference</p>
+					<p class="fragment highlight-current-custom">Epistemology</p>
+				</section>
+
+
 				<section data-transition="zoom">
 					<h2>Bayesian Inference for Intractable Models</h2>
 					<hr>
@@ -48,7 +93,7 @@
 					<section>
 						<h3>Prelude</h3>
 						<hr>
-						<h4>The Problem with Simulation Models and Inference</h4>
+						<h4>Challenges with Simulation Models and Inference</h4>
 					</section>
 
 					<section data-transition="zoom-in fade-out">
@@ -207,9 +252,9 @@
 					<section>
 						<h4>Model Misspecification</h4>
 						<hr>
-						<p>So with these novel techniques it's just all a question of using neural networks?</p>
-						<p>We tried these with some real data and ... oh well...</p>
-						<p>So we did some benchmarking for observed data $y_o$ in the tails.</p>
+						<p class="fragment highlight-current-normal">So with these novel techniques it's just all a question of using neural networks?</p>
+						<p class="fragment highlight-current-normal">We tried these with some real data and ... oh well...</p>
+						<p class="fragment highlight-current-normal">So we did some benchmarking for observed data $y_o$ in the tails.</p>
 					</section>
 
 					<section>
@@ -263,7 +308,7 @@
 					</section>
 
 					<section>
-						<img src="spikeslab.png" alt="reveal.js logo" style="height: 400px; margin: -20 auto 0rem auto; background: transparent;" class="demo-logo">
+						<img src="spikeslab.png" alt="spikeslab.png" style="height: 400px; margin: -20 auto 0rem auto; background: transparent;" class="demo-logo">
 						<p>Why it works</p>
 					</section>
 
@@ -292,7 +337,7 @@
 				</section>
 				
 			
-				<!-- <section data-transition="zoom-in fade-out">
+				<section data-transition="zoom-in fade-out">
 					<h3>Chapter 2</h3>
 					<hr>
 					<h4>Maybe it's the Likelihood's fault<a class="fragment">?</a></h4>
@@ -474,7 +519,7 @@
 						<p>Dynamic random graph: edges appear with probability $\phi$ and dissappear with probability $\tau$. We run Signature ABC:</p>
 						<img src="sd_nobp_post_probablyBest.png" alt="reveal.js logo" style="height: 400px; margin: 0 auto 0rem auto; background: white;" class="demo-logo">	
 					</section>
-				</section> -->
+				</section> 
 
 				<!-- <section>
 					<h2>The Lorenz Equations</h2>
